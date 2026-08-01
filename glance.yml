@@ -1,3 +1,45 @@
+document:
+  head: |
+    <style>
+      #manual-reload-btn {
+        position: fixed;
+        bottom: 1rem;
+        right: 1rem;
+        z-index: 999;
+        background: var(--color-primary);
+        color: #fff;
+        border: none;
+        border-radius: 0.5rem;
+        padding: 0.5rem 0.9rem;
+        font-size: 0.85rem;
+        cursor: pointer;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+      }
+      #manual-reload-btn:hover { opacity: 0.85; }
+      #last-updated-label {
+        position: fixed;
+        bottom: 1.6rem;
+        right: 7.5rem;
+        z-index: 999;
+        font-size: 0.75rem;
+        opacity: 0.6;
+      }
+    </style>
+    <script>
+      document.addEventListener('DOMContentLoaded', function () {
+        var label = document.createElement('div');
+        label.id = 'last-updated-label';
+        label.textContent = 'Loaded ' + new Date().toLocaleTimeString();
+        document.body.appendChild(label);
+
+        var btn = document.createElement('button');
+        btn.id = 'manual-reload-btn';
+        btn.textContent = '⟳ Reload';
+        btn.onclick = function () { location.reload(); };
+        document.body.appendChild(btn);
+      });
+    </script>
+
 pages:
   - name: Home
     columns:
@@ -5,14 +47,6 @@ pages:
         widgets:
           - type: clock
             hour-format: 24h
-
-          - type: rss
-            title: VOZ
-            limit: 20
-            cache: 5m
-            feeds:
-              - url: https://voz.vn/f/-/index.rss
-                title: VOZ
 
           - type: custom-api
             title: Claude Usage
@@ -58,6 +92,33 @@ pages:
                 </div>
               </div>
               {{ end }}
+
+          - type: group
+            title: VOZ
+            widgets:
+              - type: rss
+                title: All
+                limit: 20
+                cache: 5m
+                feeds:
+                  - url: https://voz.vn/f/-/index.rss
+                    title: VOZ
+
+              - type: rss
+                title: Linh tinh
+                limit: 20
+                cache: 5m
+                feeds:
+                  - url: https://voz.vn/f/chuyen-tro-linh-tinh%E2%84%A2.17/index.rss
+                    title: Linh tinh
+
+              - type: rss
+                title: Điểm báo
+                limit: 20
+                cache: 5m
+                feeds:
+                  - url: https://voz.vn/f/diem-bao.33/index.rss
+                    title: Điểm báo
 
       - size: full
         widgets:
