@@ -67,29 +67,59 @@ document:
       }
     </style>
     <script>
+      // Fire-and-forget background launch -- no navigation, no new tab.
+      // no-cors because the launcher listener sends no CORS headers; we
+      // don't need to read the response, just confirm the fetch resolved.
+      function glanceLaunch(ev, key) {
+        ev.preventDefault();
+        var label = ev.currentTarget.querySelector('span:last-child');
+        var original = label.textContent;
+        fetch('http://100.110.90.117:8082/launch?app=' + key, { mode: 'no-cors' })
+          .then(function () { label.textContent = 'Launched'; })
+          .catch(function () { label.textContent = 'Error'; })
+          .finally(function () { setTimeout(function () { label.textContent = original; }, 1200); });
+      }
       // Only exists on Home (VOZ is the only 'group' widget) -- no-op on
       // Project/Config pages. Polls rather than relying on DOMContentLoaded
       // since the group widget's content attaches slightly after that event.
+      //
+      // IMPORTANT: Glance's own tab-switching JS (setupGroups() in page.js)
+      // reads `.widget-header`'s children BY RAW POSITIONAL INDEX and
+      // assumes they line up 1:1 with the tab panels. Appending extra
+      // children directly into `.widget-header` breaks that indexing and
+      // makes every tab click throw mid-handler (clears "current" from all
+      // tabs, then crashes before activating the new one -- every tab goes
+      // blank). Confirmed by reading Glance's actual source, not guessed.
+      // Fix: absolutely-position a separate container over
+      // `.widget-group-header` instead of adding siblings inside
+      // `.widget-header` itself.
       (function poll(attemptsLeft) {
         var group = document.querySelector('.widget-type-group');
-        var header = group ? group.querySelector('.widget-header') : null;
-        if (!header) {
+        var groupHeader = group ? group.querySelector('.widget-group-header') : null;
+        if (!groupHeader) {
           if (attemptsLeft > 0) setTimeout(function () { poll(attemptsLeft - 1); }, 150);
           return;
         }
         if (document.getElementById('manual-reload-btn')) return;
 
+        groupHeader.style.position = 'relative';
+
+        var container = document.createElement('div');
+        container.style.cssText = 'position:absolute; top:0; right:0; height:100%; display:flex; align-items:center; gap:0.5rem;';
+
         var label = document.createElement('div');
         label.id = 'last-updated-label';
         label.textContent = 'Loaded ' + new Date().toLocaleTimeString();
-        header.appendChild(label);
+        container.appendChild(label);
 
         var btn = document.createElement('button');
         btn.id = 'manual-reload-btn';
         btn.textContent = '⟳';
         btn.title = 'Reload dashboard (this is a full page reload -- Glance has no per-widget refresh)';
         btn.onclick = function () { location.reload(); };
-        header.appendChild(btn);
+        container.appendChild(btn);
+
+        groupHeader.appendChild(container);
       })(40);
     </script>
 
@@ -173,6 +203,14 @@ pages:
                   - url: https://voz.vn/f/diem-bao.33/index.rss
                     title: Điểm báo
 
+              - type: rss
+                title: Lập trình
+                limit: 20
+                cache: 5m
+                feeds:
+                  - url: https://voz.vn/f/lap-trinh-cntt.91/index.rss
+                    title: Lập trình
+
       - size: full
         widgets:
           - type: bookmarks
@@ -206,35 +244,35 @@ pages:
             title: Launchers
             template: |
               <div class="launcher-grid">
-                <a href="http://100.110.90.117:8082/launch?app=signal" target="_blank" class="launcher-tile">
+                <a href="#" onclick="glanceLaunch(event, 'signal')" class="launcher-tile">
                   <img src="https://cdn.jsdelivr.net/npm/simple-icons@latest/icons/signal.svg" alt="">
                   <span>Signal</span>
                 </a>
-                <a href="http://100.110.90.117:8082/launch?app=telegram" target="_blank" class="launcher-tile">
+                <a href="#" onclick="glanceLaunch(event, 'telegram')" class="launcher-tile">
                   <img src="https://cdn.jsdelivr.net/npm/simple-icons@latest/icons/telegram.svg" alt="">
                   <span>Telegram</span>
                 </a>
-                <a href="http://100.110.90.117:8082/launch?app=zed" target="_blank" class="launcher-tile">
+                <a href="#" onclick="glanceLaunch(event, 'zed')" class="launcher-tile">
                   <img src="https://cdn.jsdelivr.net/npm/simple-icons@latest/icons/zedindustries.svg" alt="">
                   <span>Zed</span>
                 </a>
-                <a href="http://100.110.90.117:8082/launch?app=steam" target="_blank" class="launcher-tile">
+                <a href="#" onclick="glanceLaunch(event, 'steam')" class="launcher-tile">
                   <img src="https://cdn.jsdelivr.net/npm/simple-icons@latest/icons/steam.svg" alt="">
                   <span>Steam</span>
                 </a>
-                <a href="http://100.110.90.117:8082/launch?app=rancher" target="_blank" class="launcher-tile">
+                <a href="#" onclick="glanceLaunch(event, 'rancher')" class="launcher-tile">
                   <img src="https://cdn.jsdelivr.net/npm/simple-icons@latest/icons/rancher.svg" alt="">
                   <span>Rancher Desktop</span>
                 </a>
-                <a href="http://100.110.90.117:8082/launch?app=moonlight" target="_blank" class="launcher-tile">
+                <a href="#" onclick="glanceLaunch(event, 'moonlight')" class="launcher-tile">
                   <span class="launcher-fallback-icon">M</span>
                   <span>Moonlight</span>
                 </a>
-                <a href="http://100.110.90.117:8082/launch?app=cpuz" target="_blank" class="launcher-tile">
+                <a href="#" onclick="glanceLaunch(event, 'cpuz')" class="launcher-tile">
                   <span class="launcher-fallback-icon">C</span>
                   <span>CPU-Z</span>
                 </a>
-                <a href="http://100.110.90.117:8082/launch?app=uma" target="_blank" class="launcher-tile">
+                <a href="#" onclick="glanceLaunch(event, 'uma')" class="launcher-tile">
                   <span class="launcher-fallback-icon">U</span>
                   <span>Uma Musume JP</span>
                 </a>
