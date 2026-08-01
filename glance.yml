@@ -1,0 +1,109 @@
+pages:
+  - name: Home
+    columns:
+      - size: small
+        widgets:
+          - type: clock
+            hour-format: 24h
+
+          - type: rss
+            title: VOZ
+            limit: 20
+            cache: 5m
+            feeds:
+              - url: https://voz.vn/f/-/index.rss
+                title: VOZ
+
+          - type: custom-api
+            title: Claude Usage
+            cache: 1h
+            url: https://claude.ai/api/organizations/d1b3b1b0-8de0-46a1-b2e0-45d0ed4ed1f1/usage
+            headers:
+              Cookie: sessionKey=${readFileFromEnv:CLAUDE_SESSION_KEY_FILE}
+              Accept: application/json
+              Referer: https://claude.ai/settings/usage
+              Origin: https://claude.ai
+              User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36
+            template: |
+              <div class="size-h4 color-highlight margin-bottom-10">Plan usage limits</div>
+              {{ $printedWeekly := false }}
+              {{ range .JSON.Array "limits" }}
+              {{ $kind := .String "kind" }}
+              {{ $percent := .Int "percent" }}
+              {{ $resets := .String "resets_at" | parseTime "rfc3339nano" }}
+              {{ if and (ne $kind "session") (not $printedWeekly) }}
+              <div class="size-h4 color-highlight margin-top-15 margin-bottom-10">Weekly limits</div>
+              {{ $printedWeekly = true }}
+              {{ end }}
+              <div class="margin-bottom-10">
+                <div class="flex justify-between items-end size-h5">
+                  <div>{{ if eq $kind "session" }}Current session{{ else if eq $kind "weekly_all" }}All models{{ else }}{{ replaceAll "_" " " $kind }}{{ end }}</div>
+                  <div class="color-highlight text-very-compact">{{ $percent }} <span class="color-base">%</span></div>
+                </div>
+                <div class="progress-bar progress-bar-combined">
+                  <div class="progress-value{{ if ge $percent 85 }} progress-value-notice{{ end }}" style="--percent: {{ $percent }}"></div>
+                </div>
+                <div class="size-h6">Resets <span {{ toRelativeTime $resets }}></span></div>
+              </div>
+              {{ end }}
+              {{ if .JSON.Bool "extra_usage.is_enabled" }}
+              <div class="size-h4 color-highlight margin-top-15 margin-bottom-10">Usage credits</div>
+              <div class="margin-bottom-10">
+                <div class="flex justify-between items-end size-h5">
+                  <div>{{ .JSON.Float "extra_usage.used_credits" }} spent</div>
+                  <div class="color-highlight text-very-compact">{{ .JSON.Int "extra_usage.utilization" }} <span class="color-base">%</span></div>
+                </div>
+                <div class="progress-bar progress-bar-combined">
+                  <div class="progress-value" style="--percent: {{ .JSON.Int "extra_usage.utilization" }}"></div>
+                </div>
+              </div>
+              {{ end }}
+
+      - size: full
+        widgets:
+          - type: bookmarks
+            groups:
+              - links:
+                  - title: Glance GitHub
+                    url: https://github.com/glanceapp/glance
+                  - title: Grok
+                    url: https://grok.com
+                  - title: Claude
+                    url: https://claude.ai
+                    icon: si:anthropic
+                  - title: VOZ
+                    url: https://voz.vn
+              - title: YouTube
+                links:
+                  - title: The PrimeTime
+                    url: https://www.youtube.com/@ThePrimeTimeagen
+                    icon: si:youtube
+                  - title: Mr Matt Lee
+                    url: https://www.youtube.com/@Mr_Matt_Lee
+                    icon: si:youtube
+                  - title: Fireship
+                    url: https://www.youtube.com/@Fireship
+                    icon: si:youtube
+                  - title: Low Level
+                    url: https://www.youtube.com/@LowLevelTV
+                    icon: si:youtube
+
+  - name: Project
+    columns:
+      - size: full
+        widgets:
+          - type: repository
+            title: odysseus-dev/odysseus
+            repository: odysseus-dev/odysseus
+            pull-requests-limit: 5
+            issues-limit: 5
+            commits-limit: 5
+            cache: 5m
+
+          - type: bookmarks
+            groups:
+              - title: odysseus-dev/odysseus
+                links:
+                  - title: Discussions
+                    url: https://github.com/odysseus-dev/odysseus/discussions
+                    icon: si:github

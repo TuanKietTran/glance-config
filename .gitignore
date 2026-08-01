@@ -1,0 +1,7 @@
+# This directory only ever holds glance.yml -- the actual secret file
+# (claude_session_key.txt) lives in a sibling directory, deliberately
+# outside this repo entirely (see infra/self-hosted/modules/glance).
+# This .gitignore is defense-in-depth in case that ever changes.
+secrets/
+*.env
+*.key
