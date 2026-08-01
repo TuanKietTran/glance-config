@@ -13,8 +13,8 @@ document:
       }
       #manual-reload-btn:hover { opacity: 0.85; }
       #last-updated-label {
-        font-size: 0.7rem;
-        opacity: 0.6;
+        font-size: 0.95rem;
+        opacity: 0.75;
         white-space: nowrap;
         align-self: center;
       }
@@ -24,11 +24,37 @@ document:
         max-height: 500px;
         overflow-y: auto;
       }
-      /* Glance only offers 'full' (equal split) or 'small' (fixed 300px)
-         columns, no ratio option -- overriding the equal-split width
-         directly to get a 1/3 (side) : 2/3 (rest) layout instead. */
-      .page-columns > .page-column-full:nth-of-type(1) { width: 33% !important; }
-      .page-columns > .page-column-full:nth-of-type(2) { width: 67% !important; }
+      /* The VOZ tab-title row scrolls horizontally on its own instead of
+         clipping titles (e.g. "Lập trình") when the column is too narrow
+         to fit every tab. */
+      .widget-type-group .widget-header {
+        overflow-x: auto;
+        flex-wrap: nowrap;
+        scrollbar-width: thin;
+      }
+      .widget-type-group .widget-header .widget-group-title {
+        flex-shrink: 0;
+      }
+      /* Glance's own mobile breakpoint (max-width: 1190px) also catches
+         tablets in landscape/portrait (e.g. iPad Air 5 is 820/1180 CSS px
+         either way). Push the real switch-to-mobile point down to 700px,
+         and restore the normal desktop layout for anything wider than
+         that but still under Glance's 1190px cutoff. */
+      @media (min-width: 551px) and (max-width: 1190px) {
+        .header-container { display: flex !important; }
+        .page-column-small { width: 300px !important; flex-shrink: 0 !important; }
+        .page-column { display: block !important; }
+        .mobile-navigation, .mobile-navigation-offset { display: none !important; }
+      }
+      /* Below 550px, stack all columns vertically instead of Glance's
+         default single-column tab-switcher (which hid the second column
+         behind a tap target on the bottom nav bar). The side column goes
+         full-width here too instead of staying pinned at 300px. */
+      @media (max-width: 550px) {
+        .page-columns { flex-direction: column !important; }
+        .page-column, .page-column-small { display: block !important; width: 100% !important; }
+        .mobile-navigation-label:has(.mobile-navigation-pill) { display: none !important; }
+      }
       /* Desktop-style icon grid for the Launchers widget. */
       .launcher-grid {
         display: flex;
@@ -74,7 +100,14 @@ document:
         ev.preventDefault();
         var label = ev.currentTarget.querySelector('span:last-child');
         var original = label.textContent;
-        fetch('http://100.110.90.117:8082/launch?app=' + key, { mode: 'no-cors' })
+        // Same-origin through the tunnel when on the public hostname (Access-
+        // protected, no mixed content); direct port hit otherwise (Tailscale
+        // IP / localhost) -- a hardcoded https:// URL would silently "succeed"
+        // via no-cors even if Access just redirected it to a login page.
+        var url = location.origin === 'https://homelab.mashallow.cloud'
+          ? 'https://homelab.mashallow.cloud/launcher/launch?app=' + key
+          : 'http://' + location.hostname + ':8082/launch?app=' + key;
+        fetch(url, { mode: 'no-cors' })
           .then(function () { label.textContent = 'Launched'; })
           .catch(function () { label.textContent = 'Error'; })
           .finally(function () { setTimeout(function () { label.textContent = original; }, 1200); });
@@ -97,11 +130,105 @@ document:
       // soon as tab count/label length changes (hit this exact regression
       // once already: 4th tab added, overlay started overlapping "Lập
       // trình"). Its own row below the tabs can never collide.
-      (function poll(attemptsLeft) {
+
+      // Glance has no per-widget refresh API -- the only thing it exposes
+      // is a whole-page content endpoint (the same one it uses for its own
+      // initial load: /api/pages/{slug}/content/). A plain location.reload()
+      // works but is a full browser navigation (flash, lost scroll
+      // position). Instead: fetch that same endpoint, swap each widget's
+      // DOM node individually (skipping the clock -- it has its own
+      // internal ticking interval closed over its original DOM nodes, and
+      // has nothing meaningful to "refresh" anyway), then manually re-run
+      // the pieces of Glance's own page.js init that only attach at load
+      // time (tab click-handlers, dynamic relative-time text) since a DOM
+      // swap wipes whatever event listeners were on the old nodes. These
+      // are reimplemented from page.js by hand -- Glance doesn't expose
+      // them on window -- so if Glance's markup/behavior ever changes this
+      // may need updating to match; falls back to a full reload on any
+      // error so a mismatch never leaves the page half-updated.
+      function wireGroupTabs() {
+        var groups = document.getElementsByClassName('widget-type-group');
+        for (var g = 0; g < groups.length; g++) {
+          (function (group) {
+            var titles = group.getElementsByClassName('widget-header')[0].children;
+            var tabs = group.getElementsByClassName('widget-group-contents')[0].children;
+            var current = 0;
+            for (var t = 0; t < titles.length; t++) {
+              (function (title, t) {
+                title.addEventListener('click', function () {
+                  if (t === current) return;
+                  for (var i = 0; i < titles.length; i++) {
+                    titles[i].classList.remove('widget-group-title-current');
+                    titles[i].setAttribute('aria-selected', 'false');
+                    tabs[i].classList.remove('widget-group-content-current');
+                    tabs[i].setAttribute('aria-hidden', 'true');
+                  }
+                  tabs[t].dataset.direction = current < t ? 'right' : 'left';
+                  current = t;
+                  title.classList.add('widget-group-title-current');
+                  title.setAttribute('aria-selected', 'true');
+                  tabs[t].classList.add('widget-group-content-current');
+                  tabs[t].setAttribute('aria-hidden', 'false');
+                });
+              })(titles[t], t);
+            }
+          })(groups[g]);
+        }
+      }
+
+      function timestampToRelativeTime(timestamp) {
+        var minuteInSeconds = 60, hourInSeconds = 3600, dayInSeconds = 86400,
+          monthInSeconds = dayInSeconds * 30.4, yearInSeconds = dayInSeconds * 365;
+        var delta = Math.round(Date.now() / 1000 - timestamp);
+        var prefix = '';
+        if (delta < 0) { delta = -delta; prefix = 'in '; }
+        if (delta < minuteInSeconds) return prefix + '1m';
+        if (delta < hourInSeconds) return prefix + Math.floor(delta / minuteInSeconds) + 'm';
+        if (delta < dayInSeconds) return prefix + Math.floor(delta / hourInSeconds) + 'h';
+        if (delta < monthInSeconds) return prefix + Math.floor(delta / dayInSeconds) + 'd';
+        if (delta < yearInSeconds) return prefix + Math.floor(delta / monthInSeconds) + 'mo';
+        return prefix + Math.floor(delta / yearInSeconds) + 'y';
+      }
+
+      function refreshDynamicRelativeTime() {
+        document.querySelectorAll('[data-dynamic-relative-time]').forEach(function (el) {
+          el.textContent = timestampToRelativeTime(el.dataset.dynamicRelativeTime);
+        });
+      }
+
+      function refreshPageContent(btn) {
+        var original = btn.textContent;
+        btn.textContent = '⟳...';
+        btn.disabled = true;
+        fetch(pageData.baseURL + '/api/pages/' + pageData.slug + '/content/')
+          .then(function (r) { return r.text(); })
+          .then(function (html) {
+            var fresh = document.createElement('div');
+            fresh.innerHTML = html;
+            // Only top-level widgets -- a `group` widget (VOZ) nests one
+            // `.widget` per tab internally, which would double-count and
+            // break index-matching if selected too.
+            var topLevelSelector = ':scope > .page-columns > .page-column > .widget';
+            var oldWidgets = document.querySelectorAll('#page-content > .page-columns > .page-column > .widget');
+            var newWidgets = fresh.querySelectorAll(topLevelSelector);
+            if (oldWidgets.length !== newWidgets.length) throw new Error('widget count mismatch');
+            for (var i = 0; i < oldWidgets.length; i++) {
+              if (!oldWidgets[i].classList.contains('widget-type-clock')) {
+                oldWidgets[i].replaceWith(newWidgets[i]);
+              }
+            }
+            wireGroupTabs();
+            refreshDynamicRelativeTime();
+            injectReloadUI(40);
+          })
+          .catch(function () { location.reload(); });
+      }
+
+      function injectReloadUI(attemptsLeft) {
         var group = document.querySelector('.widget-type-group');
         var groupHeader = group ? group.querySelector('.widget-group-header') : null;
         if (!groupHeader) {
-          if (attemptsLeft > 0) setTimeout(function () { poll(attemptsLeft - 1); }, 150);
+          if (attemptsLeft > 0) setTimeout(function () { injectReloadUI(attemptsLeft - 1); }, 150);
           return;
         }
         if (document.getElementById('manual-reload-btn')) return;
@@ -117,18 +244,20 @@ document:
         var btn = document.createElement('button');
         btn.id = 'manual-reload-btn';
         btn.textContent = '⟳';
-        btn.title = 'Reload dashboard (this is a full page reload -- Glance has no per-widget refresh)';
-        btn.onclick = function () { location.reload(); };
+        btn.title = 'Refresh dashboard data (no page reload)';
+        btn.onclick = function () { refreshPageContent(btn); };
         container.appendChild(btn);
 
         groupHeader.appendChild(container);
-      })(40);
+      }
+
+      injectReloadUI(40);
     </script>
 
 pages:
   - name: Home
     columns:
-      - size: full
+      - size: small
         widgets:
           - type: clock
             hour-format: 24h
@@ -215,6 +344,14 @@ pages:
 
       - size: full
         widgets:
+          - type: monitor
+            title: Services
+            cache: 1m
+            sites:
+              - title: Jellyfin
+                url: http://100.110.90.117:8096
+                icon: si:jellyfin
+
           - type: bookmarks
             groups:
               - links:
