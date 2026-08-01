@@ -30,7 +30,7 @@ pages:
               {{ range .JSON.Array "limits" }}
               {{ $kind := .String "kind" }}
               {{ $percent := .Int "percent" }}
-              {{ $resets := .String "resets_at" | parseTime "rfc3339nano" }}
+              {{ $resetsRaw := .String "resets_at" }}
               {{ if and (ne $kind "session") (not $printedWeekly) }}
               <div class="size-h4 color-highlight margin-top-15 margin-bottom-10">Weekly limits</div>
               {{ $printedWeekly = true }}
@@ -43,7 +43,7 @@ pages:
                 <div class="progress-bar progress-bar-combined">
                   <div class="progress-value{{ if ge $percent 85 }} progress-value-notice{{ end }}" style="--percent: {{ $percent }}"></div>
                 </div>
-                <div class="size-h6">Resets <span {{ toRelativeTime $resets }}></span></div>
+                <div class="size-h6">{{ if ne $resetsRaw "" }}Resets <span {{ toRelativeTime ($resetsRaw | parseTime "rfc3339nano") }}></span>{{ else }}Not currently active{{ end }}</div>
               </div>
               {{ end }}
               {{ if .JSON.Bool "extra_usage.is_enabled" }}
@@ -106,4 +106,21 @@ pages:
                 links:
                   - title: Discussions
                     url: https://github.com/odysseus-dev/odysseus/discussions
+                    icon: si:github
+
+  - name: Config
+    columns:
+      - size: full
+        widgets:
+          - type: repository
+            title: glance-config
+            repository: TuanKietTran/glance-config
+            commits-limit: 5
+            cache: 5m
+
+          - type: bookmarks
+            groups:
+              - links:
+                  - title: View glance.yml
+                    url: https://github.com/TuanKietTran/glance-config/blob/master/glance.yml
                     icon: si:github
