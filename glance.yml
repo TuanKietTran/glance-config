@@ -90,9 +90,13 @@ document:
       // makes every tab click throw mid-handler (clears "current" from all
       // tabs, then crashes before activating the new one -- every tab goes
       // blank). Confirmed by reading Glance's actual source, not guessed.
-      // Fix: absolutely-position a separate container over
-      // `.widget-group-header` instead of adding siblings inside
-      // `.widget-header` itself.
+      // Fix: append a separate row AFTER `.widget-header` (a sibling
+      // within `.widget-group-header`, not a child of `.widget-header`
+      // itself) instead of absolutely-positioning over it -- an overlay
+      // that competes for horizontal space with the tabs breaks again as
+      // soon as tab count/label length changes (hit this exact regression
+      // once already: 4th tab added, overlay started overlapping "Lập
+      // trình"). Its own row below the tabs can never collide.
       (function poll(attemptsLeft) {
         var group = document.querySelector('.widget-type-group');
         var groupHeader = group ? group.querySelector('.widget-group-header') : null;
@@ -102,10 +106,8 @@ document:
         }
         if (document.getElementById('manual-reload-btn')) return;
 
-        groupHeader.style.position = 'relative';
-
         var container = document.createElement('div');
-        container.style.cssText = 'position:absolute; top:0; right:0; height:100%; display:flex; align-items:center; gap:0.5rem;';
+        container.style.cssText = 'display:flex; align-items:center; justify-content:flex-end; gap:0.5rem; padding:0.3rem 0;';
 
         var label = document.createElement('div');
         label.id = 'last-updated-label';
