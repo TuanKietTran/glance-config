@@ -2,42 +2,48 @@ document:
   head: |
     <style>
       #manual-reload-btn {
-        position: fixed;
-        bottom: 1rem;
-        right: 1rem;
-        z-index: 999;
         background: var(--color-primary);
         color: #fff;
         border: none;
-        border-radius: 0.5rem;
-        padding: 0.5rem 0.9rem;
-        font-size: 0.85rem;
+        border-radius: 0.4rem;
+        padding: 0.2rem 0.6rem;
+        font-size: 0.8rem;
         cursor: pointer;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+        margin-left: auto;
       }
       #manual-reload-btn:hover { opacity: 0.85; }
       #last-updated-label {
-        position: fixed;
-        bottom: 1.6rem;
-        right: 7.5rem;
-        z-index: 999;
-        font-size: 0.75rem;
+        font-size: 0.7rem;
         opacity: 0.6;
+        white-space: nowrap;
+        align-self: center;
       }
     </style>
     <script>
-      document.addEventListener('DOMContentLoaded', function () {
+      // Only exists on Home (VOZ is the only 'group' widget) -- no-op on
+      // Project/Config pages. Polls rather than relying on DOMContentLoaded
+      // since the group widget's content attaches slightly after that event.
+      (function poll(attemptsLeft) {
+        var group = document.querySelector('.widget-type-group');
+        var header = group ? group.querySelector('.widget-header') : null;
+        if (!header) {
+          if (attemptsLeft > 0) setTimeout(function () { poll(attemptsLeft - 1); }, 150);
+          return;
+        }
+        if (document.getElementById('manual-reload-btn')) return;
+
         var label = document.createElement('div');
         label.id = 'last-updated-label';
         label.textContent = 'Loaded ' + new Date().toLocaleTimeString();
-        document.body.appendChild(label);
+        header.appendChild(label);
 
         var btn = document.createElement('button');
         btn.id = 'manual-reload-btn';
-        btn.textContent = '⟳ Reload';
+        btn.textContent = '⟳';
+        btn.title = 'Reload dashboard (this is a full page reload -- Glance has no per-widget refresh)';
         btn.onclick = function () { location.reload(); };
-        document.body.appendChild(btn);
-      });
+        header.appendChild(btn);
+      })(40);
     </script>
 
 pages:
@@ -173,6 +179,10 @@ pages:
     columns:
       - size: full
         widgets:
+          - type: iframe
+            source: http://100.110.90.117:8081
+            height: 700
+
           - type: repository
             title: glance-config
             repository: TuanKietTran/glance-config
