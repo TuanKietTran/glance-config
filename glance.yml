@@ -18,6 +18,12 @@ document:
         white-space: nowrap;
         align-self: center;
       }
+      /* Only the VOZ tab content scrolls -- the header (tabs, reload
+         button, last-updated label) stays put above it. */
+      .widget-type-group .widget-group-contents {
+        max-height: 500px;
+        overflow-y: auto;
+      }
     </style>
     <script>
       // Only exists on Home (VOZ is the only 'group' widget) -- no-op on
@@ -49,7 +55,7 @@ document:
 pages:
   - name: Home
     columns:
-      - size: small
+      - size: full
         widgets:
           - type: clock
             hour-format: 24h
@@ -154,6 +160,24 @@ pages:
                   - title: Low Level
                     url: https://www.youtube.com/@LowLevelTV
                     icon: si:youtube
+
+              - title: Launchers
+                links:
+                  - title: Age of Empires DE
+                    url: steam://rungameid/1017900
+                    icon: si:steam
+                  - title: Call of Duty
+                    url: steam://rungameid/1938090
+                    icon: si:steam
+                  - title: Call of Duty MW
+                    url: steam://rungameid/2000950
+                    icon: si:steam
+                  - title: Call of Duty MW2
+                    url: steam://rungameid/3595230
+                    icon: si:steam
+                  - title: Umamusume Pretty Derby
+                    url: steam://rungameid/3224770
+                    icon: si:steam
 
   - name: Project
     columns:
