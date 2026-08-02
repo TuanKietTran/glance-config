@@ -352,7 +352,7 @@ pages:
                 url: http://100.110.90.117:8096
                 icon: si:jellyfin
               - title: Local LLM (gemma4)
-                url: http://100.110.90.117:8090
+                url: http://bourbon.tailf9e677.ts.net:8090
 
           - type: bookmarks
             groups:
