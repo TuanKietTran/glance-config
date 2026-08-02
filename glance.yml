@@ -353,6 +353,8 @@ pages:
                 icon: si:jellyfin
               - title: Local LLM (gemma4)
                 url: http://bourbon.tailf9e677.ts.net:8090
+              - title: Odysseus
+                url: http://bourbon.tailf9e677.ts.net:7000
 
           - type: bookmarks
             groups:
