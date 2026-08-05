@@ -1,0 +1,15 @@
+{
+  "manifest_version": 3,
+  "name": "Glance New Tab",
+  "version": "2.0",
+  "description": "Self-contained dashboard new tab: clock, weather, search, bookmarks, VOZ RSS, Hacker News, GitHub repos.",
+  "chrome_url_overrides": {
+    "newtab": "newtab.html"
+  },
+  "host_permissions": [
+    "https://voz.vn/*",
+    "https://api.github.com/*",
+    "https://hn.algolia.com/*",
+    "https://api.open-meteo.com/*"
+  ]
+}
