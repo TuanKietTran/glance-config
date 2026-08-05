@@ -14,6 +14,21 @@ so widgets poll every 5 minutes and on tab focus rather than streaming):
 - Hacker News via the Algolia API (`hn.algolia.com`)
 - Open-Meteo for weather (`api.open-meteo.com`)
 
+## Theme
+
+Styled to match Glance's actual default theme, not just its layout — colors,
+spacing, and typography are pulled straight from
+[glanceapp/glance](https://github.com/glanceapp/glance)'s own
+`static/css/*.css`:
+
+- background/widget/border colors: `hsl(240, 8%, 9%/10%/13%)`
+- accent/link color: `hsl(43, 50%, 70%)` (Glance's `--color-primary`)
+- font: JetBrains Mono, the exact `.woff2` Glance bundles (`fonts/`,
+  [OFL-1.1 licensed](https://github.com/JetBrains/JetBrainsMono/blob/master/OFL.txt))
+- widget cards: 5px radius, 1px border, flat offset "shelf" shadow
+- group tabs: underline-on-active text tabs (Glance's `widget-group.css`),
+  not pill buttons
+
 ## Install (unpacked, Chrome/Brave)
 
 1. Go to `brave://extensions` (or `chrome://extensions`).
