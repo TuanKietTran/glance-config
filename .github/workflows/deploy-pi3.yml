@@ -1,0 +1,35 @@
+name: Deploy glance.yml to pi3
+
+on:
+  workflow_dispatch: {}
+
+concurrency:
+  group: deploy-pi3
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: pi3-deploy
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Connect to tailnet
+        uses: tailscale/github-action@v3
+        with:
+          oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
+          oauth-client-secret: ${{ secrets.TS_OAUTH_CLIENT_SECRET }}
+          tags: tag:ci
+
+      - name: Deploy config and restart glance
+        env:
+          SSH_KEY: ${{ secrets.PI3_DEPLOY_SSH_KEY }}
+        run: |
+          umask 077
+          mkdir -p ~/.ssh
+          printf '%s\n' "$SSH_KEY" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -H pi3.tailf9e677.ts.net >> ~/.ssh/known_hosts 2>/dev/null
+
+          scp -i ~/.ssh/deploy_key glance.yml root@pi3.tailf9e677.ts.net:/opt/glance/glance.yml
+          ssh -i ~/.ssh/deploy_key root@pi3.tailf9e677.ts.net 'systemctl restart glance && systemctl is-active glance'
