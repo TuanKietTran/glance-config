@@ -2,8 +2,9 @@ name: Deploy glance.yml to pi3
 
 on:
   push:
+    # Tag format: YYYYMMDD-HHMM, e.g. 20260809-1503
     tags:
-      - 'v*'
+      - '20[0-9][0-9][0-9][0-9][0-9][0-9]-[0-9][0-9][0-9][0-9]'
   workflow_dispatch: {}
 
 concurrency:
