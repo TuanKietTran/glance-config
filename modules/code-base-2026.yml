@@ -1,0 +1,166 @@
+name: Code Base 2026
+description: "Quảng Bình agenda (14–16 August), including flights, Hackathon lineup, and venue links."
+enabled_by_default: true
+
+css_snippet: |
+  /* Code Base 2026 agenda tabs */
+  .cb-day-wrap { font-size: 0.85rem; }
+  .cb-flight {
+    font-family: monospace;
+    font-weight: 600;
+    padding: 0.3rem 0 0.6rem;
+    margin-bottom: 0.4rem;
+    border-bottom: 1px solid rgba(128, 128, 128, 0.25);
+    color: var(--color-primary);
+  }
+  .cb-slot {
+    display: flex;
+    gap: 0.75rem;
+    padding: 0.45rem 0;
+    border-top: 1px solid rgba(128, 128, 128, 0.15);
+  }
+  .cb-slot:first-of-type { border-top: none; }
+  .cb-time {
+    flex: 0 0 92px;
+    font-weight: 600;
+    font-size: 0.78rem;
+    color: var(--color-primary);
+    white-space: nowrap;
+  }
+  .cb-note { font-size: 0.75rem; opacity: 0.7; margin-top: 2px; }
+  .cb-note a { color: var(--color-primary); }
+  .cb-tag {
+    display: inline-block;
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    background: var(--color-primary);
+    color: #fff;
+    padding: 1px 6px;
+    border-radius: 8px;
+    margin-right: 4px;
+  }
+  .cb-lineup {
+    margin-top: 0.75rem;
+    border: 1px solid var(--color-primary);
+    border-radius: 0.5rem;
+    padding: 0.6rem 0.8rem;
+  }
+  .cb-lineup-title {
+    font-weight: 700;
+    color: var(--color-primary);
+    margin-bottom: 0.5rem;
+  }
+  .cb-lineup table { width: 100%; border-collapse: collapse; font-size: 0.78rem; }
+  .cb-lineup th {
+    text-align: left;
+    opacity: 0.6;
+    font-weight: 600;
+    padding: 2px 6px;
+    border-bottom: 1px solid rgba(128, 128, 128, 0.25);
+  }
+  .cb-lineup td {
+    padding: 5px 6px;
+    vertical-align: top;
+    border-bottom: 1px solid rgba(128, 128, 128, 0.12);
+  }
+  .cb-lineup tr:last-child td { border-bottom: none; }
+  .cb-lineup .cb-presenters { opacity: 0.75; font-size: 0.72rem; white-space: pre-line; }
+
+pages:
+  - name: Code Base 2026
+    columns:
+      - size: full
+        widgets:
+          - type: group
+            title: "Code Base 2026 — Quảng Bình (14–16/08)"
+            widgets:
+              - type: custom-api
+                title: Day 1 · HCM → Quảng Bình
+                template: |
+                  <div class="cb-day-wrap">
+                    <div class="cb-flight">✈ VN1404 &nbsp;SGN → VDH&nbsp; 06:55–08:30</div>
+                    <div class="cb-slot"><div class="cb-time">5:00 AM</div><div>
+                      Meet at Tân Sơn Nhất Airport — check-in, breakfast (bánh mì / bánh bao)
+                      <div class="cb-note">10kg hand luggage + 23kg checked baggage</div>
+                    </div></div>
+                    <div class="cb-slot"><div class="cb-time">8:30 AM</div><div>Arrival at Đồng Hới Airport</div></div>
+                    <div class="cb-slot"><div class="cb-time">9–11 AM</div><div>Visit Đồng Hới Citadel &amp; Quảng Bình Museum</div></div>
+                    <div class="cb-slot"><div class="cb-time">11:30 AM</div><div>
+                      Head to Gold Coast Resort &amp; Spa — lunch at resort
+                      <div class="cb-note"><a href="https://maps.app.goo.gl/ddguXXiE6Ceqj5Cb9" target="_blank">map →</a></div>
+                    </div></div>
+                    <div class="cb-slot"><div class="cb-time">12:30 PM</div><div>
+                      Free activities
+                      <div class="cb-note">Hackathon teams: rehearse in the ballroom</div>
+                    </div></div>
+                    <div class="cb-lineup">
+                      <div class="cb-lineup-title">Hackathon Final Round <span style="opacity:.6;font-weight:400;">— T-shirt uniform</span></div>
+                      <table>
+                        <thead><tr><th>Time</th><th>Len</th><th>Topic</th><th>Presenters</th></tr></thead>
+                        <tbody>
+                          <tr><td>1:00–1:05 PM</td><td>5m</td><td>Opening of AI Hackathon 2026</td><td class="cb-presenters">—</td></tr>
+                          <tr><td>1:05–1:50 PM</td><td>45m</td><td>Ways of working — Support Sensei: AI-Powered Support Investigation</td><td class="cb-presenters">Dinh Truong Cong<br>Chau Truong Thi Minh<br>Hai Dang Van</td></tr>
+                          <tr><td>1:50–2:35 PM</td><td>45m</td><td>Ways of working — aiHelp: Clarify from the noise</td><td class="cb-presenters">Thinh Phan Van<br>Thong Huynh Minh<br>Thien Tran Quang<br>An Truong Pham Thanh</td></tr>
+                          <tr><td>2:35–3:00 PM</td><td>25m</td><td><i>Tea break</i></td><td></td></tr>
+                          <tr><td>3:00–3:45 PM</td><td>45m</td><td>Ways of working — Knowledge Lake: what leaves the building when a person does</td><td class="cb-presenters">Uyen Nguyen Dinh Tuong<br>Chau Huynh Thi Bao<br>Soa Hoang Le Hanh<br>Huyen Nguyen Thi Ngoc</td></tr>
+                          <tr><td>3:45–4:05 PM</td><td>20m</td><td>Solutions — Knowledge Lake: what leaves the building when a person does</td><td class="cb-presenters">Uyen Nguyen Dinh Tuong<br>Chau Huynh Thi Bao<br>Soa Hoang Le Hanh<br>Huyen Nguyen Thi Ngoc</td></tr>
+                          <tr><td>4:05–4:25 PM</td><td>20m</td><td>Solutions — Nadra Event Management: AI-powered workflow platform for enterprise event operations</td><td class="cb-presenters">Thuan Nguyen Minh<br>Tuan Nguyen Le Anh</td></tr>
+                          <tr><td>4:25–4:45 PM</td><td>20m</td><td>Solutions — Autonomous UI Test Agent: from pull request to autonomous feature validation, with seamless human takeover</td><td class="cb-presenters">Lam Nguyen Xuan Hoang<br>Dien Ha Si</td></tr>
+                          <tr><td>4:45–4:50 PM</td><td>5m</td><td>Closing statement</td><td class="cb-presenters">—</td></tr>
+                        </tbody>
+                      </table>
+                    </div>
+                    <div class="cb-slot" style="margin-top:0.5rem;"><div class="cb-time">6:30 PM</div><div>
+                      Dinner at Lá Cọ La Maison Restaurant — karaoke, beer &amp; fun
+                      <div class="cb-note"><a href="https://maps.app.goo.gl/HyjEdLHzCLiJq2PK6" target="_blank">map →</a></div>
+                    </div></div>
+                    <div class="cb-slot"><div class="cb-time">9 PM – late</div><div>
+                      <span class="cb-tag">Option 1</span> Nightlife &amp; street food at Quảng Bình<br>
+                      <span class="cb-tag">Option 2</span> Head back to resort — free activities
+                    </div></div>
+                  </div>
+
+              - type: custom-api
+                title: Day 2 · Quảng Bình
+                template: |
+                  <div class="cb-day-wrap">
+                    <div class="cb-slot"><div class="cb-time">6:30 AM</div><div>Buffet breakfast at resort</div></div>
+                    <div class="cb-slot"><div class="cb-time">8:00 AM</div><div>
+                      Head to Phong Nha – Kẻ Bàng National Park — visit Thiên Đường Cave
+                      <div class="cb-note">Bring: cold water, tissues, sunscreen, hats, towels</div>
+                    </div></div>
+                    <div class="cb-slot"><div class="cb-time">11:30 AM</div><div>Lunch at local restaurant</div></div>
+                    <div class="cb-slot"><div class="cb-time">1:00 PM</div><div>Head back to Gold Coast Resort &amp; Spa — free activities</div></div>
+                    <div class="cb-slot"><div class="cb-time">3:00 PM</div><div>Teambuilding at the resort beach</div></div>
+                    <div class="cb-slot"><div class="cb-time">6:30 PM</div><div>Gala Dinner at resort</div></div>
+                    <div class="cb-slot"><div class="cb-time">9:30 PM – late</div><div>Free activities</div></div>
+                  </div>
+
+              - type: custom-api
+                title: Day 3 · Quảng Bình → HCM
+                template: |
+                  <div class="cb-day-wrap">
+                    <div class="cb-slot"><div class="cb-time">7:00 AM</div><div>Buffet breakfast at resort</div></div>
+                    <div class="cb-slot"><div class="cb-time">—</div><div>Free activities</div></div>
+                    <div class="cb-slot"><div class="cb-time">10:00 AM</div><div>
+                      Check out &amp; short city tour — lunch at Bún Bò Cham (local restaurant)
+                      <div class="cb-note"><a href="https://maps.app.goo.gl/GhaRYj3Esxi969RB9" target="_blank">map →</a></div>
+                    </div></div>
+                    <div class="cb-slot"><div class="cb-time">11:30 AM</div><div>Head to Đồng Hới Airport</div></div>
+                    <div class="cb-slot"><div class="cb-time">12:00 PM</div><div>
+                      Check-in at the airport
+                      <div class="cb-note">VN1407 &nbsp;VDH → SGN&nbsp; 13:35–15:05</div>
+                    </div></div>
+                    <div class="cb-slot"><div class="cb-time">3:00 PM</div><div>Arrival at Tân Sơn Nhất Airport — farewell</div></div>
+                  </div>
+
+          - type: bookmarks
+            groups:
+              - title: Code Base 2026 links
+                links:
+                  - title: Gold Coast Resort & Spa
+                    url: https://maps.app.goo.gl/ddguXXiE6Ceqj5Cb9
+                  - title: Lá Cọ La Maison Restaurant
+                    url: https://maps.app.goo.gl/HyjEdLHzCLiJq2PK6
+                  - title: Bún Bò Cham
+                    url: https://maps.app.goo.gl/GhaRYj3Esxi969RB9

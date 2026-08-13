@@ -30,7 +30,7 @@ jobs:
           echo "--- netcheck ---"
           tailscale netcheck || true
 
-      - name: Deploy config and restart glance
+      - name: Deploy config, modules, and manager
         env:
           SSH_KEY: ${{ secrets.PI3_DEPLOY_SSH_KEY }}
           SSH_OPTS: -o StrictHostKeyChecking=accept-new -o ConnectTimeout=15
@@ -40,5 +40,11 @@ jobs:
           printf '%s\n' "$SSH_KEY" > ~/.ssh/deploy_key
           chmod 600 ~/.ssh/deploy_key
 
-          scp $SSH_OPTS -i ~/.ssh/deploy_key glance.yml root@100.92.199.101:/opt/glance/glance.yml
-          ssh $SSH_OPTS -i ~/.ssh/deploy_key root@100.92.199.101 'systemctl restart glance && systemctl is-active glance'
+          SSH="ssh $SSH_OPTS -i ~/.ssh/deploy_key root@100.92.199.101"
+          SCP="scp $SSH_OPTS -i ~/.ssh/deploy_key"
+          $SSH 'install -d /opt/glance/modules /opt/glance/module-manager && rm -f /opt/glance/modules/*.yml'
+          $SCP glance.yml root@100.92.199.101:/opt/glance/glance.base.yml
+          $SCP modules/*.yml root@100.92.199.101:/opt/glance/modules/
+          $SCP module-manager/server.py root@100.92.199.101:/opt/glance/module-manager/server.py
+          $SCP module-manager/glance-module-manager.service root@100.92.199.101:/etc/systemd/system/glance-module-manager.service
+          $SSH '/usr/bin/python3 /opt/glance/module-manager/server.py --reconcile && systemctl daemon-reload && systemctl enable --now glance-module-manager && tailscale serve --bg --set-path /config http://127.0.0.1:8081 && systemctl restart glance && systemctl is-active glance glance-module-manager'

@@ -427,7 +427,7 @@ pages:
       - size: full
         widgets:
           - type: iframe
-            source: http://100.110.90.117:8081
+            source: https://pi3.tailf9e677.ts.net/config/
             height: 700
 
           - type: repository
