@@ -30,6 +30,19 @@ jobs:
           echo "--- netcheck ---"
           tailscale netcheck || true
 
+      - name: Verify runner is tagged for SSH
+        run: |
+          # pi3 runs Tailscale SSH, which intercepts port 22 and authorizes by
+          # tailnet ACL, not by deploy_key. An untagged runner is rejected with
+          # "tailnet policy does not permit you to SSH to this node" (exit 255),
+          # which reads like an SSH fault but is really a bad TS_AUTHKEY.
+          self_tags=$(tailscale status --json | jq -r '.Self.Tags // [] | join(",")')
+          echo "runner tags: ${self_tags:-<none>}"
+          if [ -z "$self_tags" ]; then
+            echo "::error::Runner joined the tailnet UNTAGGED, so the ACL will refuse SSH to pi3. Regenerate TS_AUTHKEY in the Tailscale admin console as a *tagged* (and reusable) auth key, then update the repo secret."
+            exit 1
+          fi
+
       - name: Deploy config, modules, and manager
         env:
           SSH_KEY: ${{ secrets.PI3_DEPLOY_SSH_KEY }}
