@@ -1,0 +1,16 @@
+[Unit]
+Description=Glance YAML module manager
+After=network-online.target glance.service tailscaled.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/opt/glance/module-manager
+Environment=GLANCE_ROOT=/opt/glance
+ExecStart=/usr/bin/python3 /opt/glance/module-manager/server.py --host 127.0.0.1 --port 8081
+Restart=on-failure
+RestartSec=2
+
+[Install]
+WantedBy=multi-user.target

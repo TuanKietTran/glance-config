@@ -310,12 +310,12 @@ pages:
             cache: 1m
             sites:
               - title: Jellyfin
-                url: http://100.110.90.117:8096
+                url: https://media.mashallow.cloud
                 icon: si:jellyfin
+              - title: Odysseus
+                url: https://odysseus.mashallow.cloud
               # - title: Local LLM (gemma4)
               #   url: http://bourbon.tailf9e677.ts.net:8090
-              # - title: Odysseus
-              #   url: http://bourbon.tailf9e677.ts.net:7000
 
           - type: bookmarks
             groups:
@@ -420,25 +420,4 @@ pages:
                 links:
                   - title: Discussions
                     url: https://github.com/odysseus-dev/odysseus/discussions
-                    icon: si:github
-
-  - name: Config
-    columns:
-      - size: full
-        widgets:
-          - type: iframe
-            source: http://100.110.90.117:8081
-            height: 700
-
-          - type: repository
-            title: glance-config
-            repository: TuanKietTran/glance-config
-            commits-limit: 5
-            cache: 5m
-
-          - type: bookmarks
-            groups:
-              - links:
-                  - title: View glance.yml
-                    url: https://github.com/TuanKietTran/glance-config/blob/master/glance.yml
                     icon: si:github

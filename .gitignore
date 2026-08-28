@@ -5,3 +5,5 @@
 secrets/
 *.env
 *.key
+__pycache__/
+*.pyc
