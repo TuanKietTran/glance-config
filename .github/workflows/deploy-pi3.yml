@@ -57,7 +57,18 @@ jobs:
           SCP="scp $SSH_OPTS -i ~/.ssh/deploy_key"
           $SSH 'install -d /opt/glance/modules /opt/glance/module-manager && rm -f /opt/glance/modules/*.yml'
           $SCP glance.yml root@100.92.199.101:/opt/glance/glance.base.yml
-          $SCP modules/*.yml root@100.92.199.101:/opt/glance/modules/
+          # modules/ is optional and git does not track empty directories, so
+          # an unmatched glob would otherwise reach scp as a literal path and
+          # fail the deploy under `bash -e`.
+          shopt -s nullglob
+          module_files=(modules/*.yml)
+          shopt -u nullglob
+          if [ ${#module_files[@]} -gt 0 ]; then
+            echo "copying ${#module_files[@]} module(s): ${module_files[*]}"
+            $SCP "${module_files[@]}" root@100.92.199.101:/opt/glance/modules/
+          else
+            echo "no modules to copy; /opt/glance/modules left empty"
+          fi
           $SCP module-manager/server.py root@100.92.199.101:/opt/glance/module-manager/server.py
           $SCP module-manager/glance-module-manager.service root@100.92.199.101:/etc/systemd/system/glance-module-manager.service
           $SSH '/usr/bin/python3 /opt/glance/module-manager/server.py --reconcile && systemctl daemon-reload && systemctl enable --now glance-module-manager && tailscale serve --bg --set-path /config http://127.0.0.1:8081 && systemctl restart glance && systemctl is-active glance glance-module-manager'
