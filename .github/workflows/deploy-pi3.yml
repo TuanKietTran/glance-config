@@ -30,18 +30,31 @@ jobs:
           echo "--- netcheck ---"
           tailscale netcheck || true
 
-      - name: Verify runner is tagged for SSH
+      - name: Verify SSH is authorized by tailnet policy
+        env:
+          SSH_KEY: ${{ secrets.PI3_DEPLOY_SSH_KEY }}
+          SSH_OPTS: -o StrictHostKeyChecking=accept-new -o ConnectTimeout=15
         run: |
-          # pi3 runs Tailscale SSH, which intercepts port 22 and authorizes by
-          # tailnet ACL, not by deploy_key. An untagged runner is rejected with
-          # "tailnet policy does not permit you to SSH to this node" (exit 255),
-          # which reads like an SSH fault but is really a bad TS_AUTHKEY.
-          self_tags=$(tailscale status --json | jq -r '.Self.Tags // [] | join(",")')
-          echo "runner tags: ${self_tags:-<none>}"
-          if [ -z "$self_tags" ]; then
-            echo "::error::Runner joined the tailnet UNTAGGED, so the ACL will refuse SSH to pi3. Regenerate TS_AUTHKEY in the Tailscale admin console as a *tagged* (and reusable) auth key, then update the repo secret."
+          # pi3 runs Tailscale SSH, so port 22 is authorized by the tailnet ACL
+          # rather than by deploy_key. When the ACL's ssh block does not cover
+          # this runner, the deploy dies mid-copy on a bare exit 255 that reads
+          # like an SSH fault. Probe it first and say what is actually wrong.
+          umask 077
+          mkdir -p ~/.ssh
+          printf '%s\n' "$SSH_KEY" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          echo "runner tags: $(tailscale status --json | jq -r '.Self.Tags // ["<none>"] | join(",")')"
+          if ! out=$(ssh $SSH_OPTS -i ~/.ssh/deploy_key root@100.92.199.101 true 2>&1); then
+            echo "$out"
+            case "$out" in
+              *"tailnet policy does not permit"*)
+                echo "::error::Tailnet ACL refused SSH. Add an \`ssh\` rule granting this runner's tag as src, pi3 as dst, and root in users. Rotating TS_AUTHKEY will not help - the runner joins the tailnet fine." ;;
+              *)
+                echo "::error::Could not open an SSH session to pi3. See the message above." ;;
+            esac
             exit 1
           fi
+          echo "ssh to pi3 authorized"
 
       - name: Deploy config, modules, and manager
         env:
